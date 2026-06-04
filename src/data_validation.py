@@ -1,22 +1,33 @@
 import pandas as pd
 
 
-def generate_validation_report(df):
-    report = {}
+def count_missing_values(df):
+    return df.isnull().sum().to_dict()
 
-    # Missing values
-    report["missing_values"] = df.isnull().sum().to_dict()
 
-    # Duplicate records
-    report["duplicate_records"] = int(df.duplicated().sum())
+def count_duplicate_records(df):
+    return int(df.duplicated().sum())
 
-    # Invalid date formats
+
+def detect_invalid_dates(df, date_column="OCC_DATE"):
     invalid_dates = {}
 
-    if "OCC_DATE" in df.columns:
-        parsed_dates = pd.to_datetime(df["OCC_DATE"], errors="coerce")
-        invalid_dates["OCC_DATE"] = int(parsed_dates.isna().sum())
+    if date_column in df.columns:
+        parsed_dates = pd.to_datetime(
+            df[date_column],
+            errors="coerce"
+        )
 
-    report["invalid_date_formats"] = invalid_dates
+        invalid_dates[date_column] = int(
+            parsed_dates.isna().sum()
+        )
 
-    return report
+    return invalid_dates
+
+
+def generate_validation_report(df):
+    return {
+        "missing_values": count_missing_values(df),
+        "duplicate_records": count_duplicate_records(df),
+        "invalid_date_formats": detect_invalid_dates(df)
+    }
