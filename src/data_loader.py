@@ -1,5 +1,7 @@
+import logging
 import pandas as pd
 
+logging.basicConfig(level=logging.ERROR)
 
 def load_dataset(file_path: str) -> pd.DataFrame:
     """
@@ -18,6 +20,10 @@ def load_dataset(file_path: str) -> pd.DataFrame:
         return pd.read_csv(file_path)
 
     except FileNotFoundError:
+        logging.error(
+            f"Dataset file not found: {file_path}"
+        )
+
         raise FileNotFoundError(
             f"Dataset file not found: {file_path}"
         )
