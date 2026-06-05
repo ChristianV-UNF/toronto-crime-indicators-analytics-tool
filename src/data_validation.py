@@ -9,18 +9,25 @@ def count_duplicate_records(df):
     return int(df.duplicated().sum())
 
 
-def detect_invalid_dates(df, date_column="OCC_DATE"):
+def detect_invalid_dates(df, date_columns=None):
     invalid_dates = {}
 
-    if date_column in df.columns:
-        parsed_dates = pd.to_datetime(
-            df[date_column],
-            errors="coerce"
-        )
+    if date_columns is None:
+        date_columns = [
+            column for column in df.columns
+            if "DATE" in column.upper()
+        ]
 
-        invalid_dates[date_column] = int(
-            parsed_dates.isna().sum()
-        )
+    for column in date_columns:
+        if column in df.columns:
+            non_missing_dates = df[column].dropna()
+
+            parsed_dates = pd.to_datetime(
+                non_missing_dates,
+                errors="coerce"
+            )
+
+            invalid_dates[column] = int(parsed_dates.isna().sum())
 
     return invalid_dates
 
