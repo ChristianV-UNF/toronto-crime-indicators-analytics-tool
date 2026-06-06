@@ -49,10 +49,7 @@ def generate_hourly_summary_table(df, hour_column="OCC_HOUR"):
 def create_hourly_crime_visualization(hourly_summary):
     fig, ax = plt.subplots()
 
-    ax.bar(
-        hourly_summary["hour"],
-        hourly_summary["crime_count"]
-    )
+    ax.bar(hourly_summary["hour"], hourly_summary["crime_count"])
 
     ax.set_title("Crimes by Hour of Day")
     ax.set_xlabel("Hour of Day")
@@ -75,17 +72,14 @@ def format_hour_range(hour):
     display_hour = hour % 12 or 12
     period = "AM" if hour < 12 else "PM"
 
-    return (
-        f"{display_hour}:00 {period} - "
-        f"{display_hour}:59 {period}"
-    )
+    return f"{display_hour}:00 {period} - {display_hour}:59 {period}"
 
 
-def print_hour_legend():
-    print("\nHour Legend:")
-
-    for hour in range(24):
-        print(f"{hour:>2} = {format_hour_range(hour)}")
+def get_hour_legend():
+    return {
+        hour: format_hour_range(hour)
+        for hour in range(24)
+    }
 
 
 if __name__ == "__main__":
@@ -101,14 +95,12 @@ if __name__ == "__main__":
     print("\nHourly Summary:")
     print(summary.head())
 
-    print_hour_legend()
+    print("\nHour Legend:")
+    for hour, time_range in get_hour_legend().items():
+        print(f"{hour:>2} = {time_range}")
 
     peak_hours = identify_peak_hours(hourly_counts)
 
     print("\nPeak Crime Hour(s):")
-
     for hour in peak_hours:
-        print(
-            f"Hour {hour} "
-            f"({format_hour_range(hour)})"
-        )
+        print(f"Hour {hour} ({format_hour_range(hour)})")
