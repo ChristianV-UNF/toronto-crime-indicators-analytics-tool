@@ -25,10 +25,8 @@ def sample_data():
 def test_prepare_datetime():
     df = prepare_datetime(sample_data())
 
-    # ✔ column still exists
     assert "OCC_DATE" in df.columns
 
-    # ✔ correct type conversion
     assert pd.api.types.is_datetime64_any_dtype(df["OCC_DATE"])
 
 
@@ -37,7 +35,6 @@ def test_extract_time_features():
 
     assert "year_month" in df.columns
 
-    # 🔥 NEW: ensure it's datetime-like (important fix)
     assert pd.api.types.is_datetime64_any_dtype(df["year_month"])
 
 

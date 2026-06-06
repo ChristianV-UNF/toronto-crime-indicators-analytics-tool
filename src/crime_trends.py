@@ -19,7 +19,6 @@ def extract_time_features(df: pd.DataFrame, date_column: str = "OCC_DATE") -> pd
     df["year"] = df[date_column].dt.year
     df["month"] = df[date_column].dt.month
 
-    # ✅ FIX: keep as REAL datetime (not string)
     df["year_month"] = df[date_column].dt.to_period("M").dt.to_timestamp()
 
     return df
