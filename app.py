@@ -11,7 +11,12 @@ from src.hourly_analysis import (
     format_hour_range,
     get_hour_legend,
 )
-from src.neighbourhood_analysis import group_crimes_by_neighbourhood
+from src.neighbourhood_analysis import (
+    group_crimes_by_neighbourhood,
+    calculate_crime_counts,
+    identify_top_crime_neighbourhoods,
+    generate_neighbourhood_rankings
+)
 
 
 st.title("Toronto Crime Indicators Analytics Tool")
@@ -70,19 +75,18 @@ try:
     # Crime Analysis by Neighbourhood
     st.header("Crime Analysis by Neighbourhood")
 
-    from src.neighbourhood_analysis import (
-        group_crimes_by_neighbourhood,
-        calculate_crime_counts,
-        identify_top_crime_neighbourhoods
-    )
-
     neighbourhood_counts = calculate_crime_counts(df)
 
     top_neighbourhoods = identify_top_crime_neighbourhoods(
         neighbourhood_counts
     )
 
-    st.dataframe(top_neighbourhoods)
+
+    neighbourhood_rankings = generate_neighbourhood_rankings(
+        top_neighbourhoods
+    )
+
+    st.dataframe(neighbourhood_rankings)
 
 
 except FileNotFoundError as error:

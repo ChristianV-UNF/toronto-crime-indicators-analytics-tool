@@ -40,3 +40,17 @@ def identify_top_crime_neighbourhoods(
     """
 
     return neighbourhood_counts.head(top_n)
+
+def generate_neighbourhood_rankings(
+    neighbourhood_counts
+):
+    rankings = neighbourhood_counts.reset_index()
+    rankings.columns = ["neighbourhood", "crime_count"]
+
+    rankings.insert(
+        0,
+        "rank",
+        range(1, len(rankings) + 1)
+    )
+
+    return rankings
