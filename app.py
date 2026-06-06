@@ -70,7 +70,12 @@ try:
     # Crime Analysis by Neighbourhood
     st.header("Crime Analysis by Neighbourhood")
 
-    neighbourhood_counts = group_crimes_by_neighbourhood(df)
+    from src.neighbourhood_analysis import (
+        group_crimes_by_neighbourhood,
+        calculate_crime_counts
+    )
+
+    neighbourhood_counts = calculate_crime_counts(df)
 
     st.subheader("Top Crime Neighbourhoods")
 

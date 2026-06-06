@@ -11,6 +11,18 @@ def group_crimes_by_neighbourhood(
     neighbourhood_df = df[[neighbourhood_column]].copy()
     neighbourhood_df = neighbourhood_df.dropna()
 
+    return neighbourhood_df
+
+
+def calculate_crime_counts(
+    df,
+    neighbourhood_column="NEIGHBOURHOOD_158"
+):
+    neighbourhood_df = group_crimes_by_neighbourhood(
+        df,
+        neighbourhood_column
+    )
+
     neighbourhood_counts = (
         neighbourhood_df[neighbourhood_column]
         .value_counts()
