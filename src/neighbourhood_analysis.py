@@ -1,4 +1,5 @@
 import pandas as pd
+import matplotlib.pyplot as plt
 
 
 def group_crimes_by_neighbourhood(
@@ -54,3 +55,20 @@ def generate_neighbourhood_rankings(
     )
 
     return rankings
+
+
+def create_neighbourhood_visualization(neighbourhood_rankings):
+    fig, ax = plt.subplots()
+
+    ax.bar(
+        neighbourhood_rankings["neighbourhood"],
+        neighbourhood_rankings["crime_count"]
+    )
+
+    ax.set_title("Top Crime Neighbourhoods")
+    ax.set_xlabel("Neighbourhood")
+    ax.set_ylabel("Crime Count")
+
+    ax.tick_params(axis="x", rotation=45)
+
+    return fig

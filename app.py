@@ -15,7 +15,8 @@ from src.neighbourhood_analysis import (
     group_crimes_by_neighbourhood,
     calculate_crime_counts,
     identify_top_crime_neighbourhoods,
-    generate_neighbourhood_rankings
+    generate_neighbourhood_rankings,
+    create_neighbourhood_visualization,
 )
 
 
@@ -87,6 +88,11 @@ try:
     )
 
     st.dataframe(neighbourhood_rankings)
+
+    st.subheader("Neighbourhood Crime Visualization")
+
+    fig = create_neighbourhood_visualization(neighbourhood_rankings)
+    st.pyplot(fig)
 
 
 except FileNotFoundError as error:
