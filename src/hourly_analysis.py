@@ -7,7 +7,19 @@ def extract_hour_data(df, hour_column="OCC_HOUR"):
         raise KeyError(f"{hour_column} column not found")
 
     hour_df = df[[hour_column]].copy()
+
+    hour_df[hour_column] = pd.to_numeric(
+        hour_df[hour_column],
+        errors="coerce"
+    )
+
     hour_df = hour_df.dropna()
+
+    hour_df = hour_df[
+        (hour_df[hour_column] >= 0)
+        & (hour_df[hour_column] <= 23)
+    ]
+
     hour_df[hour_column] = hour_df[hour_column].astype(int)
 
     return hour_df
@@ -37,7 +49,11 @@ def generate_hourly_summary_table(df, hour_column="OCC_HOUR"):
 def create_hourly_crime_visualization(hourly_summary):
     fig, ax = plt.subplots()
 
-    ax.bar(hourly_summary["hour"], hourly_summary["crime_count"])
+    ax.bar(
+        hourly_summary["hour"],
+        hourly_summary["crime_count"]
+    )
+
     ax.set_title("Crimes by Hour of Day")
     ax.set_xlabel("Hour of Day")
     ax.set_ylabel("Crime Count")
@@ -54,9 +70,25 @@ def identify_peak_hours(hourly_counts):
 
     return peak_hours
 
-if __name__ == "__main__":
-    import pandas as pd
 
+def format_hour_range(hour):
+    display_hour = hour % 12 or 12
+    period = "AM" if hour < 12 else "PM"
+
+    return (
+        f"{display_hour}:00 {period} - "
+        f"{display_hour}:59 {period}"
+    )
+
+
+def print_hour_legend():
+    print("\nHour Legend:")
+
+    for hour in range(24):
+        print(f"{hour:>2} = {format_hour_range(hour)}")
+
+
+if __name__ == "__main__":
     df = pd.read_csv("data/Toronto_Crime_Indicators.csv")
 
     hourly_counts = group_crimes_by_hour(df)
@@ -69,7 +101,14 @@ if __name__ == "__main__":
     print("\nHourly Summary:")
     print(summary.head())
 
+    print_hour_legend()
+
     peak_hours = identify_peak_hours(hourly_counts)
 
     print("\nPeak Crime Hour(s):")
-    print(peak_hours)
+
+    for hour in peak_hours:
+        print(
+            f"Hour {hour} "
+            f"({format_hour_range(hour)})"
+        )
