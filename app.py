@@ -11,6 +11,7 @@ from src.hourly_analysis import (
     format_hour_range,
     get_hour_legend,
 )
+from src.neighbourhood_analysis import group_crimes_by_neighbourhood
 
 
 st.title("Toronto Crime Indicators Analytics Tool")
@@ -65,6 +66,18 @@ try:
 
     fig = create_hourly_crime_visualization(hourly_summary)
     st.pyplot(fig)
+
+    # Crime Analysis by Neighbourhood
+    st.header("Crime Analysis by Neighbourhood")
+
+    neighbourhood_counts = group_crimes_by_neighbourhood(df)
+
+    st.subheader("Top Crime Neighbourhoods")
+
+    st.dataframe(
+        neighbourhood_counts.head(10)
+    )
+
 
 except FileNotFoundError as error:
     st.error(str(error))
