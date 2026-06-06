@@ -72,16 +72,17 @@ try:
 
     from src.neighbourhood_analysis import (
         group_crimes_by_neighbourhood,
-        calculate_crime_counts
+        calculate_crime_counts,
+        identify_top_crime_neighbourhoods
     )
 
     neighbourhood_counts = calculate_crime_counts(df)
 
-    st.subheader("Top Crime Neighbourhoods")
-
-    st.dataframe(
-        neighbourhood_counts.head(10)
+    top_neighbourhoods = identify_top_crime_neighbourhoods(
+        neighbourhood_counts
     )
+
+    st.dataframe(top_neighbourhoods)
 
 
 except FileNotFoundError as error:

@@ -30,3 +30,13 @@ def calculate_crime_counts(
     )
 
     return neighbourhood_counts
+
+def identify_top_crime_neighbourhoods(
+    neighbourhood_counts,
+    top_n=10
+):
+    """
+    Return the top neighbourhoods with the highest crime counts.
+    """
+
+    return neighbourhood_counts.head(top_n)
