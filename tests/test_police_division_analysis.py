@@ -9,6 +9,8 @@ from src.police_division_analysis import (
     identify_top_divisions,
     generate_division_rankings,
     create_division_visualization,
+    get_top_division_summary,
+    get_division_activity_insight,
 )
 
 @pytest.fixture
@@ -36,7 +38,7 @@ def test_calculate_division_crime_counts(sample_division_df):
 
     assert result.loc["D31"] == 3
     assert result.loc["D14"] == 2
-    assert result.loc["NSA"] == 1
+    assert result.loc["Unknown"] == 1
 
 
 def test_identify_top_divisions(sample_division_df):
@@ -63,3 +65,28 @@ def test_create_division_visualization(sample_division_df):
     fig = create_division_visualization(rankings)
 
     assert isinstance(fig, Figure)
+
+def test_invalid_top_n_raises_error(sample_division_df):
+    counts = calculate_division_crime_counts(sample_division_df)
+    with pytest.raises(ValueError, match="top_n must be greater than 0"):
+        identify_top_divisions(counts, top_n=0)
+
+def test_get_top_division_summary(sample_division_df):
+    summary = get_top_division_summary(sample_division_df)
+
+    assert summary["top_division"] == "D31"
+    assert summary["crime_count"] == 3
+    assert summary["percentage"] == 50.0
+
+
+def test_get_division_activity_insight(sample_division_df):
+    result = get_division_activity_insight(sample_division_df)
+
+    assert "insight" in result
+    assert "D31" in result["insight"]
+
+def test_group_crimes_by_division_replaces_nsa():
+    df = pd.DataFrame({"DIVISION": ["D14", "NSA", "NSA"]})
+    result = group_crimes_by_division(df)
+    assert "NSA" not in result["DIVISION"].values
+    assert result["DIVISION"].tolist().count("Unknown") == 2
