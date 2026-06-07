@@ -8,6 +8,7 @@ def group_crimes_by_premises(df, premises_column="PREMISES_TYPE"):
 
     premises_df = df[[premises_column]].copy()
     premises_df = premises_df.dropna()
+    premises_df[premises_column] = premises_df[premises_column].replace("NSA", "Unknown")
 
     return premises_df
 
@@ -25,6 +26,12 @@ def calculate_premises_frequencies(df, premises_column="PREMISES_TYPE"):
 
 
 def identify_top_premises_categories(premises_frequencies, top_n=10):
+    """
+    Return the top premises categories with the highest crime counts.
+    """
+    if top_n <= 0:
+        raise ValueError("top_n must be greater than 0.")
+
     return premises_frequencies.head(top_n)
 
 
@@ -51,3 +58,30 @@ def create_premises_visualization(premises_rankings):
     ax.tick_params(axis="x", rotation=45)
 
     return fig
+
+def get_premises_type_summary(df, top_n=10):
+    premises_frequencies = calculate_premises_frequencies(df)
+    top_premises = identify_top_premises_categories(premises_frequencies, top_n=1)
+    top_category = top_premises.index[0]
+    top_count = int(top_premises.iloc[0])
+
+    total_crimes = int(premises_frequencies.sum())
+    percentage = round((top_count / total_crimes) * 100, 2) if total_crimes else 0
+
+    return {
+        "top_premises_type": top_category,
+        "crime_count": top_count,
+        "percentage": percentage,
+    }
+
+
+def get_premises_distribution_insight(df):
+    summary = get_premises_type_summary(df)
+
+    return {
+        "insight": (
+            f"The most frequent premises type is {summary['top_premises_type']} "
+            f"with {summary['crime_count']} reported crimes, "
+            f"representing {summary['percentage']}% of all incidents."
+        )
+    }

@@ -8,6 +8,8 @@ from src.premises_analysis import (
     identify_top_premises_categories,
     generate_premises_rankings,
     create_premises_visualization,
+    get_premises_type_summary,
+    get_premises_distribution_insight,
 )
 
 
@@ -44,7 +46,7 @@ def test_calculate_premises_frequencies(sample_premises_df):
 
     assert result.loc["House"] == 3
     assert result.loc["Outside"] == 2
-    assert result.loc["NSA"] == 1
+    assert result.loc["Unknown"] == 1 
 
 
 def test_identify_top_premises_categories(sample_premises_df):
@@ -71,3 +73,32 @@ def test_create_premises_visualization(sample_premises_df):
     fig = create_premises_visualization(rankings)
 
     assert isinstance(fig, Figure)
+
+def test_invalid_top_n_raises_error(sample_premises_df):
+    frequencies = calculate_premises_frequencies(sample_premises_df)
+
+    with pytest.raises(ValueError, match="top_n must be greater than 0"):
+        identify_top_premises_categories(frequencies, top_n=0)
+
+
+def test_group_crimes_by_premises_replaces_nsa():
+    df = pd.DataFrame({"PREMISES_TYPE": ["House", "NSA", "NSA"]})
+    result = group_crimes_by_premises(df)
+
+    assert "NSA" not in result["PREMISES_TYPE"].values
+    assert result["PREMISES_TYPE"].tolist().count("Unknown") == 2
+
+
+def test_get_premises_type_summary(sample_premises_df):
+    summary = get_premises_type_summary(sample_premises_df)
+
+    assert summary["top_premises_type"] == "House"
+    assert summary["crime_count"] == 3
+    assert summary["percentage"] == 50.0
+
+
+def test_get_premises_distribution_insight(sample_premises_df):
+    result = get_premises_distribution_insight(sample_premises_df)
+
+    assert "insight" in result
+    assert "House" in result["insight"]
