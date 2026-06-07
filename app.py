@@ -19,6 +19,13 @@ from src.neighbourhood_analysis import (
     create_neighbourhood_visualization,
 )
 
+from src.crime_trends import (
+    prepare_datetime,
+    extract_time_features,
+    get_monthly_trend,
+    generate_trend_summary,
+    plot_monthly_trend,
+)
 
 st.title("Toronto Crime Indicators Analytics Tool")
 
@@ -73,6 +80,21 @@ try:
     fig = create_hourly_crime_visualization(hourly_summary)
     st.pyplot(fig)
 
+    st.header("Crime Trends Over Time")
+
+    trend_df = prepare_datetime(df)
+    trend_df = extract_time_features(trend_df)
+
+    summary = generate_trend_summary(trend_df)
+
+    st.subheader("Trend Summary")
+    st.write(summary["insight"])
+
+    st.subheader("Monthly Trend Chart")
+    fig = plot_monthly_trend(trend_df)
+    st.plotly_chart(fig, use_container_width=True)
+    #st.pyplot(fig)
+    
     # Crime Analysis by Neighbourhood
     st.header("Crime Analysis by Neighbourhood")
 
