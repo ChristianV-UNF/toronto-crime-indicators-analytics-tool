@@ -47,6 +47,10 @@ from src.premises_analysis import (
     get_premises_distribution_insight,
 )
 
+from src.hotspot_analysis import (
+    process_geographic_coordinates
+)
+
 st.title("Toronto Crime Indicators Analytics Tool")
 
 DATASET_PATH = "data/Toronto_Crime_Indicators.csv"
@@ -72,6 +76,7 @@ try:
         tab_offences,
         tab_divisions,
         tab_premises,
+        tab_hotspots,
     ) = st.tabs([
         "Overview",
         "Hourly Analysis",
@@ -80,6 +85,7 @@ try:
         "Offences",
         "Police Divisions",
         "Premises",
+        "Hotspots",
     ])
 
     with tab_overview:
@@ -205,6 +211,15 @@ try:
         st.subheader("Premises Distribution Visualization")
         fig = create_premises_visualization(premises_rankings)
         st.pyplot(fig)
+
+    with tab_hotspots:
+        st.header("Crime Hotspot Analysis")
+
+        coordinates_df = process_geographic_coordinates(df)
+
+        st.write(f"Valid coordinate records: {len(coordinates_df):,}")
+
+        st.dataframe(coordinates_df.head())
 
 except FileNotFoundError as error:
     st.error(str(error))
