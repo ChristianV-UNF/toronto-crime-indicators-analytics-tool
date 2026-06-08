@@ -54,3 +54,11 @@ def identify_crime_hotspots(
     )
 
     return hotspot_counts
+
+def highlight_high_density_locations(
+    hotspots,
+    threshold=1000
+):
+    return hotspots[
+        hotspots["crime_count"] >= threshold
+    ]

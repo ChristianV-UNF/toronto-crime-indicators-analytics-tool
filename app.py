@@ -50,6 +50,7 @@ from src.premises_analysis import (
 from src.hotspot_analysis import (
     process_geographic_coordinates,
     identify_crime_hotspots,
+    highlight_high_density_locations,
 )
 
 st.title("Toronto Crime Indicators Analytics Tool")
@@ -230,6 +231,18 @@ try:
 
         st.dataframe(
             hotspots.head(10)
+        )
+
+        high_density_locations = (
+            highlight_high_density_locations(
+                hotspots
+            )
+        )
+
+        st.subheader("High-Density Crime Locations")
+
+        st.dataframe(
+            high_density_locations
         )
 
 except FileNotFoundError as error:
