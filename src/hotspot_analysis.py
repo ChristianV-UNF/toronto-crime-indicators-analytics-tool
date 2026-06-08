@@ -1,5 +1,5 @@
 import pandas as pd
-
+import plotly.express as px
 
 def process_geographic_coordinates(
     df,
@@ -62,3 +62,32 @@ def highlight_high_density_locations(
     return hotspots[
         hotspots["crime_count"] >= threshold
     ]
+
+def create_hotspot_map_visualization(
+    hotspots,
+    latitude_column="LAT_WGS84",
+    longitude_column="LONG_WGS84"
+):
+    fig = px.scatter_mapbox(
+        hotspots,
+        lat=latitude_column,
+        lon=longitude_column,
+        size="crime_count",
+        color="crime_count",
+        hover_data=["crime_count"],
+        zoom=10,
+        height=600,
+        title="Toronto Crime Hotspot Map"
+    )
+
+    fig.update_layout(
+        mapbox_style="open-street-map",
+        margin={
+            "r": 0,
+            "t": 40,
+            "l": 0,
+            "b": 0
+        }
+    )
+
+    return fig

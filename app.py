@@ -51,6 +51,7 @@ from src.hotspot_analysis import (
     process_geographic_coordinates,
     identify_crime_hotspots,
     highlight_high_density_locations,
+    create_hotspot_map_visualization,
 )
 
 st.title("Toronto Crime Indicators Analytics Tool")
@@ -243,6 +244,17 @@ try:
 
         st.dataframe(
             high_density_locations
+        )
+
+        st.subheader("Crime Hotspot Map")
+
+        hotspot_map = create_hotspot_map_visualization(
+            high_density_locations
+        )
+
+        st.plotly_chart(
+            hotspot_map,
+            use_container_width=True
         )
 
 except FileNotFoundError as error:
