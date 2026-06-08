@@ -38,6 +38,15 @@ from src.police_division_analysis import (
     get_division_activity_insight,
 )
 
+from src.premises_analysis import (
+    group_crimes_by_premises,
+    calculate_premises_frequencies,
+    identify_top_premises_categories,
+    generate_premises_rankings,
+    create_premises_visualization,
+    get_premises_distribution_insight,
+)
+
 st.title("Toronto Crime Indicators Analytics Tool")
 
 DATASET_PATH = "data/Toronto_Crime_Indicators.csv"
@@ -62,6 +71,7 @@ try:
         tab_neighbourhood,
         tab_offences,
         tab_divisions,
+        tab_premises,
     ) = st.tabs([
         "Overview",
         "Hourly Analysis",
@@ -69,6 +79,7 @@ try:
         "Neighbourhood",
         "Offences",
         "Police Divisions",
+        "Premises",
     ])
 
     with tab_overview:
@@ -173,6 +184,26 @@ try:
 
         st.subheader("Division Crime Visualization")
         fig = create_division_visualization(division_rankings)
+        st.pyplot(fig)
+
+    with tab_premises:
+        st.header("Premises Type Distribution")
+
+        premises_df = group_crimes_by_premises(df)
+        st.write(f"Records with valid premises data: {len(premises_df):,}")
+
+        insight = get_premises_distribution_insight(df)
+        st.write(insight["insight"])
+
+        premises_frequencies = calculate_premises_frequencies(df)
+        top_premises = identify_top_premises_categories(premises_frequencies, top_n=10)
+        premises_rankings = generate_premises_rankings(top_premises)
+
+        st.subheader("Top Premises Categories")
+        st.dataframe(premises_rankings)
+        
+        st.subheader("Premises Distribution Visualization")
+        fig = create_premises_visualization(premises_rankings)
         st.pyplot(fig)
 
 except FileNotFoundError as error:
