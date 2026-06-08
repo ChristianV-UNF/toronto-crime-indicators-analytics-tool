@@ -34,3 +34,23 @@ def process_geographic_coordinates(
     ]
 
     return coordinates_df
+
+def identify_crime_hotspots(
+    coordinates_df,
+    latitude_column="LAT_WGS84",
+    longitude_column="LONG_WGS84"
+):
+    hotspot_counts = (
+        coordinates_df
+        .groupby(
+            [latitude_column, longitude_column]
+        )
+        .size()
+        .reset_index(name="crime_count")
+        .sort_values(
+            by="crime_count",
+            ascending=False
+        )
+    )
+
+    return hotspot_counts

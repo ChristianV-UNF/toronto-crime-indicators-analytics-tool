@@ -48,7 +48,8 @@ from src.premises_analysis import (
 )
 
 from src.hotspot_analysis import (
-    process_geographic_coordinates
+    process_geographic_coordinates,
+    identify_crime_hotspots,
 )
 
 st.title("Toronto Crime Indicators Analytics Tool")
@@ -220,6 +221,16 @@ try:
         st.write(f"Valid coordinate records: {len(coordinates_df):,}")
 
         st.dataframe(coordinates_df.head())
+
+        hotspots = identify_crime_hotspots(
+            coordinates_df
+        )
+
+        st.subheader("Top Crime Hotspots")
+
+        st.dataframe(
+            hotspots.head(10)
+        )
 
 except FileNotFoundError as error:
     st.error(str(error))
