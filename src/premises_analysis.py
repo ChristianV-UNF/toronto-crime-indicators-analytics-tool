@@ -8,7 +8,12 @@ def group_crimes_by_premises(df, premises_column="PREMISES_TYPE"):
 
     premises_df = df[[premises_column]].copy()
     premises_df = premises_df.dropna()
-    premises_df[premises_column] = premises_df[premises_column].replace("NSA", "Unknown")
+
+    premises_df[premises_column] = (
+        premises_df[premises_column]
+        .astype(str)
+        .replace("NSA", "Unknown")
+    )
 
     return premises_df
 
@@ -39,12 +44,20 @@ def generate_premises_rankings(premises_frequencies):
     rankings = premises_frequencies.reset_index()
     rankings.columns = ["premises_type", "crime_count"]
 
+    rankings["premises_type"] = rankings["premises_type"].astype(str)
+
     rankings.insert(0, "rank", range(1, len(rankings) + 1))
 
     return rankings
 
 
 def create_premises_visualization(premises_rankings):
+    premises_rankings = premises_rankings.copy()
+    premises_rankings["premises_type"] = (
+        premises_rankings["premises_type"]
+        .astype(str)
+    )
+
     fig, ax = plt.subplots()
 
     ax.bar(
@@ -57,12 +70,27 @@ def create_premises_visualization(premises_rankings):
     ax.set_ylabel("Crime Count")
     ax.tick_params(axis="x", rotation=45)
 
+    fig.tight_layout()
+
     return fig
+
 
 def get_premises_type_summary(df, top_n=10):
     premises_frequencies = calculate_premises_frequencies(df)
-    top_premises = identify_top_premises_categories(premises_frequencies, top_n=1)
-    top_category = top_premises.index[0]
+
+    if premises_frequencies.empty:
+        return {
+            "top_premises_type": "No valid premises data",
+            "crime_count": 0,
+            "percentage": 0,
+        }
+
+    top_premises = identify_top_premises_categories(
+        premises_frequencies,
+        top_n=1
+    )
+
+    top_category = str(top_premises.index[0])
     top_count = int(top_premises.iloc[0])
 
     total_crimes = int(premises_frequencies.sum())

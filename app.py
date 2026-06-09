@@ -76,7 +76,7 @@ try:
         available_hours
     )
 
-    available_offences = sorted(df["OFFENCE"].dropna().unique())
+    available_offences = sorted(df["OFFENCE"].dropna().astype(str).unique())
     selected_offences = st.sidebar.multiselect(
         "Filter by Offence",
         available_offences
@@ -152,131 +152,221 @@ try:
     with tab_hourly:
         st.header("Crime Analysis by Hour of Day")
 
-        hourly_summary = generate_hourly_summary_table(filtered_df)
-        st.subheader("Hourly Crime Summary")
-        st.dataframe(hourly_summary)
+        if filtered_df.empty:
+            st.info("No records available for the current filter selection.")
+        else:
+            hourly_summary = generate_hourly_summary_table(filtered_df)
+            st.subheader("Hourly Crime Summary")
+            st.dataframe(hourly_summary)
 
-        hourly_counts = group_crimes_by_hour(filtered_df)
-        peak_hours = identify_peak_hours(hourly_counts)
+            hourly_counts = group_crimes_by_hour(filtered_df)
+            peak_hours = identify_peak_hours(hourly_counts)
 
-        st.subheader("Peak Crime Hour(s)")
-        for hour in peak_hours:
-            st.write(f"Hour {hour}: {format_hour_range(hour)}")
+            st.subheader("Peak Crime Hour(s)")
+            for hour in peak_hours:
+                st.write(f"Hour {hour}: {format_hour_range(hour)}")
 
-        st.subheader("Hour Reference Guide")
-        legend_df = pd.DataFrame(
-            list(get_hour_legend().items()),
-            columns=["Hour", "Time Range"],
-        )
-        st.dataframe(legend_df, use_container_width=True)
+            st.subheader("Hour Reference Guide")
+            legend_df = pd.DataFrame(
+                list(get_hour_legend().items()),
+                columns=["Hour", "Time Range"],
+            )
+            st.dataframe(legend_df, use_container_width=True)
 
-        st.subheader("Hourly Crime Visualization")
-        fig = create_hourly_crime_visualization(hourly_summary)
-        st.pyplot(fig)
+            st.subheader("Hourly Crime Visualization")
+            fig = create_hourly_crime_visualization(hourly_summary)
+            st.pyplot(fig)
 
     with tab_trends:
         st.header("Crime Trends Over Time")
 
-        trend_df = prepare_datetime(filtered_df)
-        trend_df = extract_time_features(trend_df)
-        monthly_trend = get_monthly_trend(trend_df)
-        summary = generate_trend_summary(trend_df)
+        if filtered_df.empty:
+            st.info("No records available for the current filter selection.")
+        else:
+            trend_df = prepare_datetime(filtered_df)
+            trend_df = extract_time_features(trend_df)
+            monthly_trend = get_monthly_trend(trend_df)
+            summary = generate_trend_summary(trend_df)
 
-        st.subheader("Trend Summary")
-        st.write(summary["insight"])
+            st.subheader("Trend Summary")
+            st.write(summary["insight"])
 
-        st.subheader("Monthly Trend Table")
-        st.dataframe(monthly_trend)
+            st.subheader("Monthly Trend Table")
+            st.dataframe(monthly_trend)
 
-        st.subheader("Monthly Trend Chart")
-        fig = plot_monthly_trend(trend_df)
-        st.plotly_chart(fig, use_container_width=True)
+            st.subheader("Monthly Trend Chart")
+            fig = plot_monthly_trend(trend_df)
+            st.plotly_chart(fig, use_container_width=True)
 
     with tab_neighbourhood:
         st.header("Crime Analysis by Neighbourhood")
 
-        neighbourhood_df = group_crimes_by_neighbourhood(filtered_df)
-        st.write(f"Records with valid neighbourhood data: {len(neighbourhood_df):,}")
+        if filtered_df.empty:
+            st.info("No records available for the current filter selection.")
+        else:
+            neighbourhood_df = group_crimes_by_neighbourhood(filtered_df)
+            st.write(
+                f"Records with valid neighbourhood data: {len(neighbourhood_df):,}"
+            )
 
-        neighbourhood_counts = calculate_crime_counts(filtered_df)
-        top_neighbourhoods = identify_top_crime_neighbourhoods(neighbourhood_counts)
-        neighbourhood_rankings = generate_neighbourhood_rankings(top_neighbourhoods)
+            neighbourhood_counts = calculate_crime_counts(filtered_df)
+            top_neighbourhoods = identify_top_crime_neighbourhoods(
+                neighbourhood_counts
+            )
+            neighbourhood_rankings = generate_neighbourhood_rankings(
+                top_neighbourhoods
+            )
 
-        st.subheader("Top Neighbourhood Rankings")
-        st.dataframe(neighbourhood_rankings)
+            st.subheader("Top Neighbourhood Rankings")
+            st.dataframe(neighbourhood_rankings)
 
-        st.subheader("Neighbourhood Crime Visualization")
-        fig = create_neighbourhood_visualization(neighbourhood_rankings)
-        st.pyplot(fig)
+            st.subheader("Neighbourhood Crime Visualization")
+            fig = create_neighbourhood_visualization(neighbourhood_rankings)
+            st.pyplot(fig)
 
     with tab_offences:
         st.header("Offence Type Distribution")
 
-        insight = get_offence_distribution_insight(filtered_df)
-        st.write(insight["insight"])
+        if filtered_df.empty:
+            st.info("No records available for the current filter selection.")
+        else:
+            insight = get_offence_distribution_insight(filtered_df)
+            st.write(insight["insight"])
 
-        offence_data = prepare_offence_visualization_data(filtered_df, top_n=10)
-        st.dataframe(offence_data)
-        st.bar_chart(offence_data.set_index("OFFENCE")["crime_count"])
+            offence_data = prepare_offence_visualization_data(
+                filtered_df,
+                top_n=10
+            )
+
+            offence_data["OFFENCE"] = offence_data["OFFENCE"].astype(str)
+
+            st.dataframe(offence_data)
+            st.bar_chart(
+                offence_data.set_index("OFFENCE")["crime_count"]
+            )
 
     with tab_divisions:
         st.header("Police Division Activity")
 
-        insight = get_division_activity_insight(filtered_df)
-        st.write(insight["insight"])
+        if filtered_df.empty:
+            st.info("No records available for the current filter selection.")
+        else:
+            insight = get_division_activity_insight(filtered_df)
+            st.write(insight["insight"])
 
-        division_counts = calculate_division_crime_counts(filtered_df)
-        top_divisions = identify_top_divisions(division_counts, top_n=10)
-        division_rankings = generate_division_rankings(top_divisions)
+            division_counts = calculate_division_crime_counts(filtered_df)
+            top_divisions = identify_top_divisions(
+                division_counts,
+                top_n=10
+            )
+            division_rankings = generate_division_rankings(top_divisions)
 
-        st.subheader("Top Police Divisions")
-        st.dataframe(division_rankings)
+            division_rankings["division"] = (
+                division_rankings["division"]
+                .astype(str)
+            )
 
-        st.subheader("Division Crime Visualization")
-        fig = create_division_visualization(division_rankings)
-        st.pyplot(fig)
+            st.subheader("Top Police Divisions")
+            st.dataframe(division_rankings)
+
+            st.subheader("Division Crime Visualization")
+            fig = create_division_visualization(division_rankings)
+            st.pyplot(fig)
 
     with tab_premises:
         st.header("Premises Type Distribution")
 
-        premises_df = group_crimes_by_premises(filtered_df)
-        st.write(f"Records with valid premises data: {len(premises_df):,}")
+        if filtered_df.empty:
+            st.info("No records available for the current filter selection.")
+        else:
+            premises_df = group_crimes_by_premises(filtered_df)
+            st.write(f"Records with valid premises data: {len(premises_df):,}")
 
-        insight = get_premises_distribution_insight(filtered_df)
-        st.write(insight["insight"])
+            insight = get_premises_distribution_insight(filtered_df)
+            st.write(insight["insight"])
 
-        premises_frequencies = calculate_premises_frequencies(filtered_df)
-        top_premises = identify_top_premises_categories(premises_frequencies, top_n=10)
-        premises_rankings = generate_premises_rankings(top_premises)
+            premises_frequencies = calculate_premises_frequencies(filtered_df)
+            top_premises = identify_top_premises_categories(
+                premises_frequencies,
+                top_n=10
+            )
+            premises_rankings = generate_premises_rankings(top_premises)
 
-        st.subheader("Top Premises Categories")
-        st.dataframe(premises_rankings)
+            premises_rankings["premises_type"] = (
+                premises_rankings["premises_type"]
+                .astype(str)
+            )
 
-        st.subheader("Premises Distribution Visualization")
-        fig = create_premises_visualization(premises_rankings)
-        st.pyplot(fig)
+            st.subheader("Top Premises Categories")
+            st.dataframe(premises_rankings)
+
+            st.subheader("Premises Distribution Visualization")
+
+            if premises_rankings.empty:
+                st.info(
+                    "No premises categories available for the current filter selection."
+                )
+            else:
+                fig = create_premises_visualization(premises_rankings)
+                st.pyplot(fig)
 
     with tab_hotspots:
         st.header("Crime Hotspot Analysis")
 
-        coordinates_df = process_geographic_coordinates(filtered_df)
-        st.write(f"Valid coordinate records: {len(coordinates_df):,}")
+        if filtered_df.empty:
+            st.info("No records available for the current filter selection.")
+        else:
+            coordinates_df = process_geographic_coordinates(filtered_df)
+            st.write(f"Valid coordinate records: {len(coordinates_df):,}")
 
-        st.dataframe(coordinates_df.head())
+            if coordinates_df.empty:
+                st.info(
+                    "No valid coordinate records found for the current filter selection."
+                )
+            else:
+                st.dataframe(coordinates_df.head())
 
-        hotspots = identify_crime_hotspots(coordinates_df)
+                hotspots = identify_crime_hotspots(coordinates_df)
 
-        st.subheader("Top Crime Hotspots")
-        st.dataframe(hotspots.head(10))
+                st.subheader("Top Crime Hotspots")
+                st.dataframe(hotspots.head(10))
 
-        high_density_locations = highlight_high_density_locations(hotspots)
+                high_density_locations = highlight_high_density_locations(
+                    hotspots
+                )
 
-        st.subheader("High-Density Crime Locations")
-        st.dataframe(high_density_locations)
+                st.subheader("High-Density Crime Locations")
+                st.dataframe(high_density_locations)
 
-        st.subheader("Crime Hotspot Map")
-        hotspot_map = create_hotspot_map_visualization(high_density_locations)
-        st.plotly_chart(hotspot_map, use_container_width=True)
+                st.subheader("Crime Hotspot Map")
+
+                if high_density_locations.empty:
+                    st.info(
+                        "No high-density crime locations found for the current filter selection."
+                    )
+                else:
+                    high_density_locations = high_density_locations.copy()
+
+                    high_density_locations["LAT_WGS84"] = (
+                        high_density_locations["LAT_WGS84"]
+                        .astype(float)
+                    )
+                    high_density_locations["LONG_WGS84"] = (
+                        high_density_locations["LONG_WGS84"]
+                        .astype(float)
+                    )
+                    high_density_locations["crime_count"] = (
+                        high_density_locations["crime_count"]
+                        .astype(int)
+                    )
+
+                    hotspot_map = create_hotspot_map_visualization(
+                        high_density_locations
+                    )
+                    st.plotly_chart(
+                        hotspot_map,
+                        use_container_width=True
+                    )
 
 except FileNotFoundError as error:
     st.error(str(error))
