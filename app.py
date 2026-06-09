@@ -47,6 +47,13 @@ from src.premises_analysis import (
     get_premises_distribution_insight,
 )
 
+from src.hotspot_analysis import (
+    process_geographic_coordinates,
+    identify_crime_hotspots,
+    highlight_high_density_locations,
+    create_hotspot_map_visualization,
+)
+
 st.title("Toronto Crime Indicators Analytics Tool")
 
 DATASET_PATH = "data/Toronto_Crime_Indicators.csv"
@@ -72,6 +79,7 @@ try:
         tab_offences,
         tab_divisions,
         tab_premises,
+        tab_hotspots,
     ) = st.tabs([
         "Overview",
         "Hourly Analysis",
@@ -80,6 +88,7 @@ try:
         "Offences",
         "Police Divisions",
         "Premises",
+        "Hotspots",
     ])
 
     with tab_overview:
@@ -205,6 +214,48 @@ try:
         st.subheader("Premises Distribution Visualization")
         fig = create_premises_visualization(premises_rankings)
         st.pyplot(fig)
+
+    with tab_hotspots:
+        st.header("Crime Hotspot Analysis")
+
+        coordinates_df = process_geographic_coordinates(df)
+
+        st.write(f"Valid coordinate records: {len(coordinates_df):,}")
+
+        st.dataframe(coordinates_df.head())
+
+        hotspots = identify_crime_hotspots(
+            coordinates_df
+        )
+
+        st.subheader("Top Crime Hotspots")
+
+        st.dataframe(
+            hotspots.head(10)
+        )
+
+        high_density_locations = (
+            highlight_high_density_locations(
+                hotspots
+            )
+        )
+
+        st.subheader("High-Density Crime Locations")
+
+        st.dataframe(
+            high_density_locations
+        )
+
+        st.subheader("Crime Hotspot Map")
+
+        hotspot_map = create_hotspot_map_visualization(
+            high_density_locations
+        )
+
+        st.plotly_chart(
+            hotspot_map,
+            use_container_width=True
+        )
 
 except FileNotFoundError as error:
     st.error(str(error))
