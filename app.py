@@ -53,6 +53,14 @@ from src.hotspot_analysis import (
     create_hotspot_map_visualization,
 )
 
+from src.export_result import (
+    EXPORT_OPTIONS,
+    prepare_export_data,
+    convert_dataframe_to_csv,
+    generate_export_filename,
+    get_export_confirmation_message,
+)
+
 
 st.title("Toronto Crime Indicators Analytics Tool")
 
@@ -91,6 +99,32 @@ try:
     dashboard_summary = get_dashboard_summary(filtered_df)
 
     st.success("Dataset loaded successfully.")
+
+    st.sidebar.header("Export Results")
+
+    export_type = st.sidebar.selectbox(
+        "Select data to export",
+        options=list(EXPORT_OPTIONS.keys()),
+        format_func=lambda key: EXPORT_OPTIONS[key],
+    )
+    try:
+        export_df = prepare_export_data(filtered_df, export_type)
+        export_filename = generate_export_filename(export_type)
+        export_csv = convert_dataframe_to_csv(export_df)
+        st.sidebar.download_button(
+            label="Download CSV",
+            data=export_csv,
+            file_name=export_filename,
+            mime="text/csv",
+        )
+        st.sidebar.success(
+            get_export_confirmation_message(
+                export_filename,
+                len(export_df),
+            )
+        )
+    except ValueError as error:
+        st.sidebar.warning(str(error))
 
     col1, col2, col3 = st.columns(3)
 
