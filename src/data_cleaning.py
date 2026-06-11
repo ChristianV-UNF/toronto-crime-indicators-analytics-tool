@@ -21,7 +21,23 @@ def handle_placeholder_neighbourhoods(df):
 
     return cleaned_df
 
+# Updated missing value handling below to use pandas dtype-safe checks instead of strict "object" dtype comparison.
+# The previous implementation failed when some non-numeric columns (e.g., strings or categories like 'OFFENCE')
+# were inferred as non-object dtypes, causing them to be filled with 0 instead of "Unknown".
+# This change ensures all non-numeric columns consistently receive "Unknown", while numeric columns are filled with 0.
 
+def process_missing_values(df):
+    cleaned_df = df.copy()
+
+    for column in cleaned_df.columns:
+        if pd.api.types.is_numeric_dtype(cleaned_df[column]):
+            cleaned_df[column] = cleaned_df[column].fillna(0)
+        else:
+            cleaned_df[column] = cleaned_df[column].fillna("Unknown")
+
+    return cleaned_df
+
+"""
 def process_missing_values(df):
     cleaned_df = df.copy()
 
@@ -32,7 +48,7 @@ def process_missing_values(df):
             cleaned_df[column] = cleaned_df[column].fillna(0)
 
     return cleaned_df
-
+"""
 
 def clean_invalid_records(df):
     cleaned_df = handle_placeholder_neighbourhoods(df)
