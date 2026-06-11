@@ -79,10 +79,18 @@ try:
     st.sidebar.header("Dashboard Filters")
 
     available_hours = sorted(df["OCC_HOUR"].dropna().unique().astype(int))
-    selected_hours = st.sidebar.multiselect("Filter by Hour", available_hours)
+    selected_hours = st.sidebar.multiselect(
+        "Filter by Hour",
+        available_hours,
+        key="hour_filter",
+    )
 
     available_offences = sorted(df["OFFENCE"].dropna().astype(str).unique())
-    selected_offences = st.sidebar.multiselect("Filter by Offence", available_offences)
+    selected_offences = st.sidebar.multiselect(
+        "Filter by Offence",
+        available_offences,
+        key="offence_filter",
+    )
 
     filtered_df = filter_dataset(
         df,
@@ -102,26 +110,29 @@ try:
         format_func=lambda key: EXPORT_OPTIONS[key],
     )
 
-    try:
-        export_df = prepare_export_data(filtered_df, export_type)
-        export_filename = generate_export_filename(export_type)
-        export_csv = convert_dataframe_to_csv(export_df)
+    prepare_export = st.sidebar.button("Prepare Export")
 
-        st.sidebar.download_button(
-            label="Download CSV",
-            data=export_csv,
-            file_name=export_filename,
-            mime="text/csv",
-        )
+    if prepare_export:
+        try:
+            export_df = prepare_export_data(filtered_df, export_type)
+            export_filename = generate_export_filename(export_type)
+            export_csv = convert_dataframe_to_csv(export_df)
 
-        st.sidebar.success(
-            get_export_confirmation_message(
-                export_filename,
-                len(export_df),
+            st.sidebar.download_button(
+                label="Download CSV",
+                data=export_csv,
+                file_name=export_filename,
+                mime="text/csv",
             )
-        )
-    except ValueError as error:
-        st.sidebar.warning(str(error))
+
+            st.sidebar.success(
+                get_export_confirmation_message(
+                    export_filename,
+                    len(export_df),
+                )
+            )
+        except ValueError as error:
+            st.sidebar.warning(str(error))
 
     col1, col2, col3 = st.columns(3)
 
@@ -134,27 +145,22 @@ try:
     with col3:
         st.metric("Unique Offences", dashboard_summary["unique_offences"])
 
-    (
-        tab_overview,
-        tab_hourly,
-        tab_trends,
-        tab_neighbourhood,
-        tab_offences,
-        tab_divisions,
-        tab_premises,
-        tab_hotspots,
-    ) = st.tabs([
-        "Overview",
-        "Hourly Analysis",
-        "Crime Trends",
-        "Neighbourhood",
-        "Offences",
-        "Police Divisions",
-        "Premises",
-        "Hotspots",
-    ])
+    selected_tab = st.radio(
+        "Select Dashboard Section",
+        [
+            "Overview",
+            "Hourly Analysis",
+            "Crime Trends",
+            "Neighbourhood",
+            "Offences",
+            "Police Divisions",
+            "Premises",
+            "Hotspots",
+        ],
+        horizontal=True,
+    )
 
-    with tab_overview:
+    if selected_tab == "Overview":
         st.header("Dataset Preview")
         st.dataframe(filtered_df.head())
 
@@ -171,7 +177,7 @@ try:
         st.header("Data Cleaning Summary")
         st.json(generate_cleaning_summary(filtered_df))
 
-    with tab_hourly:
+    elif selected_tab == "Hourly Analysis":
         st.header("Crime Analysis by Hour of Day")
 
         if filtered_df.empty:
@@ -193,13 +199,13 @@ try:
                 list(get_hour_legend().items()),
                 columns=["Hour", "Time Range"],
             )
-            st.dataframe(legend_df, use_container_width=True)
+            st.dataframe(legend_df, width="stretch")
 
             st.subheader("Hourly Crime Visualization")
             fig = create_hourly_crime_visualization(hourly_summary)
             st.pyplot(fig)
 
-    with tab_trends:
+    elif selected_tab == "Crime Trends":
         st.header("Crime Trends Over Time")
 
         if filtered_df.empty:
@@ -218,9 +224,9 @@ try:
 
             st.subheader("Monthly Trend Chart")
             fig = plot_monthly_trend(trend_df)
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width="stretch")
 
-    with tab_neighbourhood:
+    elif selected_tab == "Neighbourhood":
         st.header("Crime Analysis by Neighbourhood")
 
         if filtered_df.empty:
@@ -230,8 +236,12 @@ try:
             st.write(f"Records with valid neighbourhood data: {len(neighbourhood_df):,}")
 
             neighbourhood_counts = calculate_crime_counts(filtered_df)
-            top_neighbourhoods = identify_top_crime_neighbourhoods(neighbourhood_counts)
-            neighbourhood_rankings = generate_neighbourhood_rankings(top_neighbourhoods)
+            top_neighbourhoods = identify_top_crime_neighbourhoods(
+                neighbourhood_counts
+            )
+            neighbourhood_rankings = generate_neighbourhood_rankings(
+                top_neighbourhoods
+            )
 
             st.subheader("Top Neighbourhood Rankings")
             st.dataframe(neighbourhood_rankings)
@@ -240,7 +250,7 @@ try:
             fig = create_neighbourhood_visualization(neighbourhood_rankings)
             st.pyplot(fig)
 
-    with tab_offences:
+    elif selected_tab == "Offences":
         st.header("Offence Type Distribution")
 
         if filtered_df.empty:
@@ -255,7 +265,7 @@ try:
             st.dataframe(offence_data)
             st.bar_chart(offence_data.set_index("OFFENCE")["crime_count"])
 
-    with tab_divisions:
+    elif selected_tab == "Police Divisions":
         st.header("Police Division Activity")
 
         if filtered_df.empty:
@@ -277,7 +287,7 @@ try:
             fig = create_division_visualization(division_rankings)
             st.pyplot(fig)
 
-    with tab_premises:
+    elif selected_tab == "Premises":
         st.header("Premises Type Distribution")
 
         if filtered_df.empty:
@@ -311,7 +321,7 @@ try:
                 fig = create_premises_visualization(premises_rankings)
                 st.pyplot(fig)
 
-    with tab_hotspots:
+    elif selected_tab == "Hotspots":
         st.header("Crime Hotspot Analysis")
 
         if filtered_df.empty:
@@ -356,7 +366,7 @@ try:
                     hotspot_map = create_hotspot_map_visualization(
                         high_density_locations
                     )
-                    st.plotly_chart(hotspot_map, use_container_width=True)
+                    st.plotly_chart(hotspot_map, width="stretch")
 
 except FileNotFoundError as error:
     st.error(str(error))
