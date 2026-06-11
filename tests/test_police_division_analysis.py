@@ -1,5 +1,8 @@
 # tests/test_police_division_analysis.py
 import pandas as pd
+import matplotlib
+matplotlib.use("Agg")
+
 import pytest
 from matplotlib.figure import Figure
 
