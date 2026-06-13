@@ -1,11 +1,10 @@
 import pandas as pd
 import streamlit as st
 
-from src.data_cleaning import generate_cleaning_summary
 from src.data_loader import get_record_count
-from src.data_validation import generate_validation_report
 from src.data_pipeline import load_clean_validate_dataset
 from src.dashboard import filter_dataset, get_dashboard_summary
+from src.dashbaords.sections.overview import render_overview_section
 from src.hourly_analysis import (
     group_crimes_by_hour,
     generate_hourly_summary_table,
@@ -161,21 +160,7 @@ try:
     )
 
     if selected_tab == "Overview":
-        st.header("Dataset Preview")
-        st.dataframe(filtered_df.head())
-
-        st.header("Dataset Quality Validation")
-        validation_report = generate_validation_report(filtered_df)
-        total_missing_values = sum(validation_report["missing_values"].values())
-
-        st.write(f"Total missing values: {total_missing_values}")
-        st.write(f"Duplicate records: {validation_report['duplicate_records']}")
-
-        for column, count in validation_report["invalid_date_formats"].items():
-            st.write(f"Invalid date formats in {column}: {count}")
-
-        st.header("Data Cleaning Summary")
-        st.json(generate_cleaning_summary(filtered_df))
+        render_overview_section(filtered_df)
 
     elif selected_tab == "Hourly Analysis":
         st.header("Crime Analysis by Hour of Day")
